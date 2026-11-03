@@ -1525,3 +1525,5 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
 
 ### 6-85. README 를 포트폴리오용 소개로 (2026-11-03)
 - 사용자 요청: Steam 판 기준, README 를 "킹덤 하츠 한글화 프로젝트" 소개로 (중요성·진행 방법·성과). 수치는 work-history·build 산출물에서 확인한 값만 사용 (번역 약 7,800줄, 메시지 약 75만, 대화창 글자 1,070, 시스템 글자 928, 그림 67, 실험 55차). 번역 초안이 AI 라는 점 명시.
+- 6-85 계속: 라이선스 Apache-2.0 (LICENSE/NOTICE), 게임 저작권 고지(게임 내 title/copyright.tm2 문구 그대로: Disney, Edgar Rice Burroughs(타잔), Square Enix), 실행 파일에 묶인 제3자 라이선스 15종 third_party/licenses.
+  사용자 유의 사항 10항 (README, 배포 README.txt, NOTICE 영문). 설치 프로그램: 시작 시 로그에 요약, 설치 전 동의 창 (아니요면 설치 안 함, 화면 확인).

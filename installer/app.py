@@ -16,6 +16,14 @@ BASE = getattr(sys, "_MEIPASS", os.path.abspath(os.path.join(os.path.dirname(__f
 TOOLS = os.path.join(BASE, "tools")
 sys.path[:0] = [TOOLS, os.path.join(TOOLS, "re")]     # 개발 실행용. 실행 파일에서는 도구가 이미 묶여 있다
 FONTS = [r"C:\Windows\Fonts\malgun.ttf", r"C:\Windows\Fonts\malgunbd.ttf"]
+NOTICE_KO = """[사용 전 확인]
+- 이 프로그램은 패치일 뿐이며 게임을 포함하거나 배포하지 않습니다. 정품 게임(Steam 판)이 필요합니다.
+- 비공식 팬 번역입니다. Square Enix, Disney 와 관계가 없고 공식 지원 대상이 아닙니다.
+- 한글 파일은 이 PC 의 게임 파일로 만들어집니다. 만들어진 파일(KH1Korean 폴더)은 게임 데이터를 바탕으로 하므로 다른 사람에게 공유하거나 재배포하지 마세요.
+- 게임 원본 파일은 바꾸지 않지만, 모드 로더(Panacea)를 설치하고 게임 실행 중 메모리를 고칩니다. 이용약관 관련 판단과 사용에 따른 책임은 사용자에게 있습니다.
+- 아무런 보증 없이 제공됩니다 (Apache License 2.0). 세이브 데이터는 미리 백업하세요.
+- 이 프로그램은 인터넷으로 정보를 보내지 않습니다.
+"""
 
 
 # ---------------------------------------------------------------- 게임 폴더 찾기
@@ -201,15 +209,20 @@ class App:
         tk.Entry(top, textvariable=self.game).pack(side="left", fill="x", expand=True, padx=6)
         tk.Button(top, text="찾아보기", command=self.browse).pack(side="left")
         btn = tk.Frame(root); btn.pack(fill="x", padx=10)
-        self.b_inst = tk.Button(btn, text="한글 패치 설치", width=16, command=lambda: self.task(install))
+        self.b_inst = tk.Button(btn, text="한글 패치 설치", width=16, command=self.install)
         self.b_play = tk.Button(btn, text="게임 실행", width=16, command=self.play)
         self.b_un = tk.Button(btn, text="제거", width=10, command=self.remove)
         for b in (self.b_inst, self.b_play, self.b_un):
             b.pack(side="left", padx=4)
         self.status = tk.Label(root, anchor="w"); self.status.pack(fill="x", padx=12, pady=4)
-        self.log = scrolledtext.ScrolledText(root, height=18, state="disabled"); self.log.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.log = scrolledtext.ScrolledText(root, height=18, state="disabled", wrap="word"); self.log.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.refresh()
+        self.say(NOTICE_KO)
         root.after(100, self.pump)
+
+    def install(self):
+        if messagebox.askyesno("설치 전 확인", NOTICE_KO + "\n위 내용을 확인했고 동의합니까?"):
+            self.task(install)
 
     def say(self, s):
         self.q.put(s)
