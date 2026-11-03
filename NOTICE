@@ -1,13 +1,82 @@
 KoreanHearts - Kingdom Hearts Korean Localization Project
 Copyright 2026 Inho Lee
 
+Licensed under the Apache License, Version 2.0 (see LICENSE). The license covers
+only the original work of this project: its source code, documentation and the
+Korean translation text. It grants no rights in the game or its content.
+
+
+UNOFFICIAL FAN PROJECT
+----------------------
+This is an unofficial, non-commercial fan translation. It is not affiliated
+with, endorsed, sponsored or approved by Square Enix, Disney, Valve or any
+other rights holder named below. A legally obtained copy of the game is
+required. No original game data (files, images, audio or original text) is
+included in this repository or its releases; the installer reads the user's
+own copy of the game on the user's PC.
+
+
+GAME COPYRIGHTS AND TRADEMARKS
+------------------------------
+KINGDOM HEARTS FINAL MIX / KINGDOM HEARTS -HD 1.5+2.5 ReMIX-
+The game displays the following notice (reproduced as it appears in the game):
+
+  (C) Disney.
+
+  Tarzan(TM) Owned by Edgar Rice Burroughs, Inc.
+  and Used by Permission
+  Copyright (C) 2002 Edgar Rice Burroughs, Inc.
+  and Disney Enterprises, Inc. All Rights Reserved.
+
+  Characters from FINAL FANTASY video game series:
+  (C) 1990,1997,1999,2001,2002 SQUARE ENIX CO., LTD.
+  All Rights Reserved.
+  SQUARE ENIX and the SQUARE ENIX logo are registered
+  trademarks or trademarks of Square Enix Holdings Co., Ltd.
+
+KINGDOM HEARTS, FINAL FANTASY and all related character names, place names,
+item names, story and dialogue are the property of Disney and/or Square Enix
+and their respective licensors. Korean names of characters and terms follow
+the official Korean releases of the series where known; those names remain
+the property of their respective owners.
+
+Steam is a trademark and/or registered trademark of Valve Corporation.
+Windows and Malgun Gothic are trademarks of Microsoft Corporation.
+All other trademarks are the property of their respective owners.
+
+
+FONTS
+-----
+No font files are distributed. At install time the installer renders the
+Korean glyphs on the user's PC from the Malgun Gothic font installed with
+Windows (C:\Windows\Fonts\malgun*.ttf) for use with the user's own copy of
+the game.
+
+
+THIRD-PARTY SOFTWARE
+--------------------
 This product includes software developed by the OpenKH Team and Contributors
 (https://github.com/OpenKH/OpenKh), licensed under the Apache License 2.0:
-  - tools/pkgextract.py ports the package format handling of OpenKh.Egs to Python.
-  - Release packages bundle OpenKH.Panacea.dll (see third_party/).
+  - tools/pkgextract.py ports the package format handling of OpenKh.Egs
+    (Hed, EgsHdAsset, EgsEncryption) to Python.
+  - Release packages include OpenKH.Panacea.dll, unmodified.
+  OpenKH - Open Kingdom Hearts Research and Development
+  Copyright 2019-2022 OpenKH Team and Contributors
 
-This is an unofficial fan translation, not affiliated with Square Enix or Disney.
-KINGDOM HEARTS and all related game data, names and text are the property of
-their respective owners. No original game data is included in this repository
-or its releases; the license above covers only the original work of this project
-(code, documentation and Korean translation text).
+The release executable (KH1Korean.exe, built with PyInstaller) also contains
+the components below. Their license texts are in third_party/licenses/ in this
+repository and in the licenses folder of each release.
+  - Python 3.13 (Python Software Foundation License)
+  - Pillow (MIT-CMU License) and the libraries bundled with it, including
+    FreeType, libjpeg-turbo, libpng, libtiff, libwebp, OpenJPEG, Little CMS,
+    HarfBuzz, libavif and others listed in Pillow.txt.
+    Portions of this software are copyright (C) The FreeType Project
+    (www.freetype.org). All rights reserved.
+    This software is based in part on the work of the Independent JPEG Group.
+  - Tcl/Tk (Tcl/Tk License)
+  - OpenSSL 3 (Apache License 2.0)
+  - libffi, expat, bzip2, xz (liblzma), mpdecimal, zlib (permissive licenses)
+  - Microsoft Visual C++ Runtime and Universal C Runtime (redistributable
+    under the Microsoft license terms)
+  - PyInstaller bootloader (GPL-2.0-or-later with the Bootloader Exception,
+    which permits distribution in combination with other programs)

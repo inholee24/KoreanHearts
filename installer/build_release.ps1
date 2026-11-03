@@ -15,7 +15,7 @@ Copy-Item "dist\KH1Korean.exe" $out
 Copy-Item "installer\README-release.txt" "$out\README.txt"
 Copy-Item "LICENSE" "$out\licenses\LICENSE-KoreanHearts.txt"
 Copy-Item "NOTICE" "$out\licenses\NOTICE-KoreanHearts.txt"
-Copy-Item "third_party\LICENSE-OpenKH.txt", "third_party\NOTICE-OpenKH.txt" "$out\licenses"
+Copy-Item "third_party\licenses\*.txt" "$out\licenses"
 $zip = "release\KH1Korean-$ver.zip"
 if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path "$out\*" -DestinationPath $zip

@@ -139,7 +139,7 @@
 | [tools/re/](tools/re/) | 실행 파일 분석 도구, 실행 중 메모리 패치 (`mem.py`) |
 | [installer/](installer/) | 설치·실행 프로그램 (`app.py`, tkinter), PyInstaller 설정, 배포 빌드 스크립트 |
 | [docs/](docs/) | 파일 형식, 실행 파일 분석, 작업 기록, 용어집, 알려진 문제 |
-| [third_party/](third_party/) | OpenKH 라이선스 (`OpenKH.Panacea.dll`은 OpenKH 릴리스에서 복사) |
+| [third_party/](third_party/) | 제3자 라이선스 전문 (`licenses/`). `OpenKH.Panacea.dll`은 OpenKH 릴리스에서 복사 |
 
 저장소에 넣지 않는 것(`.gitignore`): `data/`(꺼낸 원본), `mod/`(결과물), `translation/*.tsv`(원문이 들어간 전체 표), `translation/build/`, 게임 화면 캡처.
 
@@ -186,9 +186,51 @@ Python 3.13 + Pillow가 필요하고, 맑은 고딕(`C:\Windows\Fonts\malgun*.tt
 - 공식 한국어 자막이 나오면 고유명사 표기를 다시 맞출 예정입니다.
 - 실행 중 메모리를 고치는 기능 때문에 일부 백신이 실행 파일을 오탐할 수 있습니다.
 
-## 8. 라이선스와 고지
+## 8. 라이선스와 저작권
 
-- 이 프로젝트는 비공식 팬 번역이며 Square Enix, Disney와 관계가 없습니다. 게임 데이터의 권리는 각 권리자에게 있습니다.
-- [tools/pkgextract.py](tools/pkgextract.py)의 형식 처리는 OpenKH(Apache License 2.0)의 `OpenKh.Egs`를 Python으로 옮긴 것입니다.
-- 배포 파일에 포함되는 `OpenKH.Panacea.dll`은 OpenKH의 것입니다([LICENSE](third_party/LICENSE-OpenKH.txt), [NOTICE](third_party/NOTICE-OpenKH.txt)).
-- 이 저장소의 코드, 문서, 한국어 번역문은 [Apache License 2.0](LICENSE)을 따릅니다([NOTICE](NOTICE)). 라이선스는 이 프로젝트가 직접 만든 부분에만 적용되며, 게임 원작의 이름·설정·내용에 대한 권리를 부여하지 않습니다.
+### 이 프로젝트
+
+이 저장소의 코드, 문서, 한국어 번역문은 [Apache License 2.0](LICENSE)을 따릅니다. 고지 전문은 [NOTICE](NOTICE)에 있습니다. 라이선스는 이 프로젝트가 직접 만든 부분에만 적용되며, 게임과 그 내용에 대한 어떤 권리도 부여하지 않습니다.
+
+### 게임 저작권
+
+이 프로젝트는 비영리 비공식 팬 번역입니다. Square Enix, Disney, Valve 등 아래 권리자와 관계가 없고, 이들의 승인을 받지 않았습니다. 정품 게임이 필요합니다. 저장소와 배포 파일에는 게임 원본 데이터(파일, 그림, 소리, 원문)가 들어 있지 않습니다.
+
+게임에 표시되는 저작권 고지는 다음과 같습니다(게임 내 표기 그대로).
+
+```text
+© Disney.
+
+Tarzan™ Owned by Edgar Rice Burroughs, Inc.
+and Used by Permission
+Copyright © 2002 Edgar Rice Burroughs, Inc.
+and Disney Enterprises, Inc. All Rights Reserved.
+
+Characters from FINAL FANTASY video game series:
+© 1990,1997,1999,2001,2002 SQUARE ENIX CO., LTD.
+All Rights Reserved.
+SQUARE ENIX and the SQUARE ENIX logo are registered
+trademarks or trademarks of Square Enix Holdings Co., Ltd.
+```
+
+- KINGDOM HEARTS, FINAL FANTASY와 등장인물·지명·아이템 이름·이야기·대사의 권리는 Disney 및 Square Enix와 각 라이선서에게 있습니다.
+- 한국어 고유명사는 시리즈 한국어 정발판의 표기를 따랐으며, 그 표기의 권리도 각 권리자에게 있습니다.
+- Steam은 Valve Corporation의 상표입니다. Windows와 맑은 고딕(Malgun Gothic)은 Microsoft Corporation의 상표입니다.
+
+### 글꼴
+
+글꼴 파일은 배포하지 않습니다. 설치 프로그램이 사용자 PC에 설치된 맑은 고딕(`C:\Windows\Fonts\malgun*.ttf`)으로 한글 글자를 그 자리에서 그립니다.
+
+### 제3자 소프트웨어
+
+| 구성 요소 | 쓰임 | 라이선스 |
+|---|---|---|
+| [OpenKH](https://github.com/OpenKH/OpenKh) | `tools/pkgextract.py`가 `OpenKh.Egs`의 형식 처리를 옮김. 배포 파일에 `OpenKH.Panacea.dll`(수정하지 않음) 포함 | Apache 2.0 |
+| Python 3.13 | 설치 프로그램 실행 환경 | PSF License |
+| Pillow 및 묶인 라이브러리(FreeType, libjpeg-turbo, libpng, libtiff, libwebp, OpenJPEG, Little CMS, HarfBuzz 등) | 글자 렌더링, 그림 처리 | MIT-CMU 외 각 라이브러리 라이선스 |
+| Tcl/Tk | 설치 프로그램 화면 | Tcl/Tk License |
+| OpenSSL 3, libffi, expat, bzip2, xz, mpdecimal, zlib | Python 표준 라이브러리 구성 요소 | Apache 2.0 / 각 허용 라이선스 |
+| Microsoft Visual C++ 런타임, UCRT | 실행 환경 | Microsoft 재배포 조건 |
+| PyInstaller 부트로더 | 단일 실행 파일 | GPL-2.0+ (부트로더 예외) |
+
+라이선스 전문은 [third_party/licenses/](third_party/licenses/)에 있고, 배포 zip의 `licenses` 폴더에도 들어 있습니다.

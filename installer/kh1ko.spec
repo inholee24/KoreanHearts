@@ -9,8 +9,9 @@ datas = [(os.path.join(ROOT, "translation", "src", "*.tsv"), "translation/src"),
          (os.path.join(ROOT, "tools", "needed_*.txt"), "."),          # pkgextract 는 자기 위치(번들 루트)에서 찾는다
          (os.path.join(ROOT, "tools", "needed_*.txt"), "tools"),
          (os.path.join(ROOT, "third_party", "OpenKH.Panacea.dll"), "third_party"),
-         (os.path.join(ROOT, "third_party", "LICENSE-OpenKH.txt"), "third_party"),
-         (os.path.join(ROOT, "third_party", "NOTICE-OpenKH.txt"), "third_party")]
+         (os.path.join(ROOT, "third_party", "licenses", "*.txt"), "licenses"),
+         (os.path.join(ROOT, "LICENSE"), "."),
+         (os.path.join(ROOT, "NOTICE"), ".")]
 
 a = Analysis([os.path.join(ROOT, "installer", "app.py")],
              pathex=[os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "re")],

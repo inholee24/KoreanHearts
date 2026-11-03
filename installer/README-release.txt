@@ -21,4 +21,17 @@
   panacea_settings.txt 의 모드 경로가 이 패치로 바뀌며, 제거하면 원래대로 돌아갑니다.
 - 게임이 업데이트되면 '한글 패치 설치' 를 한 번 더 누르세요.
 - 시어터 모드(Theater)는 한글화되지 않았습니다.
-- 이 패치와 OpenKH 는 Apache License 2.0 입니다 (licenses 폴더).
+
+[저작권]
+- 이 패치는 비공식 팬 번역이며 Square Enix, Disney 와 관계가 없습니다. 정품 게임이 필요합니다.
+  배포 파일에는 게임 원본 데이터가 들어 있지 않습니다.
+- KINGDOM HEARTS 와 등장인물·지명·대사 등 게임 내용의 권리는 권리자에게 있습니다.
+  (C) Disney.
+  Tarzan(TM) Owned by Edgar Rice Burroughs, Inc. and Used by Permission
+  Copyright (C) 2002 Edgar Rice Burroughs, Inc. and Disney Enterprises, Inc. All Rights Reserved.
+  Characters from FINAL FANTASY video game series:
+  (C) 1990,1997,1999,2001,2002 SQUARE ENIX CO., LTD. All Rights Reserved.
+  SQUARE ENIX and the SQUARE ENIX logo are registered trademarks or trademarks of Square Enix Holdings Co., Ltd.
+- 한글 글자는 설치할 때 이 PC 의 맑은 고딕(Windows 기본 글꼴)으로 만듭니다. 글꼴 파일은 배포하지 않습니다.
+- 이 패치(코드·번역문)는 Apache License 2.0 입니다. 포함된 OpenKH Panacea 와 실행 파일에 묶인
+  Python, Pillow 등의 라이선스와 고지는 licenses 폴더의 NOTICE-KoreanHearts.txt 와 각 파일에 있습니다.
