@@ -25,7 +25,7 @@ import collections, glob, os, re, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 sys.path.insert(0, os.path.dirname(__file__))
-import allarea, evmsg, evmsg_export, knj_tex1024 as kt, sysfont, tr_batch
+import allarea, evmsg, evmsg_export, knj_tex1024 as kt, moviesub, sysfont, tr_batch
 
 ROOT = os.environ.get("KH1KO_ROOT") or os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA = os.path.join(ROOT, "data", "kh1")
@@ -119,7 +119,10 @@ def main(apply, layout):
                 cnt[c] += 1
                 if rel in evmsg_export.SHARED_FILES:
                     shared[c] += 1
-    order = lambda f: sorted(f, key=lambda c: (-f[c], c))
+    for t in moviesub.texts():             # 영상 자막 (대화창 글꼴, mem.py 가 게임 안에 붙인다)
+        for c in glyph_chars(t):
+            freq[c] += 1
+    order =lambda f: sorted(f, key=lambda c: (-f[c], c))
     s_idx = sysfont.slot_indices()
     both = [i for i in s_idx if i in set(POOL)]
     if len(shared) > len(both):
@@ -220,6 +223,7 @@ def main(apply, layout):
     open(os.path.join(MOD, sysfont.TBL_REL), "wb").write(s_tbl[:sysfont.FILE_REC * 16])   # 게임이 읽는 앞 1024
     open(sysfont.FULL_OUT, "wb").write(s_tbl)                                             # 나머지는 mem.py 가 붙인다 (43차)
     open(os.path.join(MOD, area_rel), "wb").write(area_bytes)
+    moviesub.write(moviesub.build(gbytes))
     for rel, nb in out_files.items():
         os.makedirs(os.path.dirname(os.path.join(MOD, rel)), exist_ok=True)
         open(os.path.join(MOD, rel), "wb").write(nb)

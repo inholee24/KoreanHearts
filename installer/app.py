@@ -8,7 +8,7 @@ import ctypes, json, os, queue, re, shutil, subprocess, sys, threading, time, tr
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 APP_ID = "2552430"
 GAME_DIR_NAME = "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-"
 WORK_NAME = "KH1Korean"

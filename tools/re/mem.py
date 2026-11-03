@@ -12,11 +12,11 @@
                      new: 지금 실행 중인 게임은 건너뛰고 새로 켜진 게임에만 적용
                      jp: 대화창 글꼴 배치도 일본어판으로 (페이지당 줄 0x4DE830=21, 줄 높이 0x4DE834=24,
                          글자 수 0x2340BA8=1764). build_ko.py --layout jp 로 만든 DDS 와 함께 쓴다 (28차)
-                     진단용 (55차): nocode = JP_CODE 패치 빼기, nosf = 시스템 글꼴 표 확장 빼기
+                     진단용 (55차): nocode = JP_CODE 패치 빼기, nosf = 시스템 글꼴 표 확장 빼기, nomovie = 영상 자막 빼기
 
 주소는 RVA (exe 모듈 베이스 기준). 쓰기는 tex2x 뿐이며 게임을 다시 켜면 원래대로 돌아간다.
 """
-import ctypes, ctypes.wintypes as wt, struct, sys, time
+import ctypes, ctypes.wintypes as wt, json, os, struct, sys, time
 
 EXE_NAME = "KINGDOM HEARTS FINAL MIX.exe"
 k32 = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -133,6 +133,25 @@ SF_FULL = __import__("os").path.join(__import__("os").environ.get("KH1KO_ROOT") 
 # kanji_cell_xy 0x176021: 비일본어·크기!=20 글자(장소 이름 등)의 화면 높이 = [0x4DE834]. jp 배치에서 24 가 되어
 # 글자가 세로로 눌린다 (31차) -> 영어판 값 32 로 고정. mov eax,[rip+0x36880d] -> mov eax,32; nop
 JP_CODE = ((0x176021, bytes.fromhex("8B050D883600"), bytes.fromhex("B82000000090")),)
+# 영상 한국어 자막 (2026-11-03): 자막 표 포인터 [영상 5 x 언어 7] 의 영어 칸(1 US, 2 UK)을 게임 안에 만든 표로 바꾼다.
+# 항목 형식과 자료는 tools/moviesub.py, translation/build/movie_sub.json (build_ko 가 씀).
+MS_TBL, MS_LANGS, MS_MOVIES = 0x4E5C80, (1, 2), ["OPN", "END", "ENX", "LOP", "EXM"]
+MS_JSON = __import__("os").path.join(__import__("os").path.dirname(SF_FULL), "movie_sub.json")
+
+
+def movie_sub_blob(data, addr):
+    """movie_sub.json -> (게임에 쓸 바이트, {영상 번호: 표 주소}). addr = 버퍼 절대 주소."""
+    tbl, txt, heads = bytearray(), bytearray(), {}
+    n_ent = sum(len(v) + 1 for v in data.values())
+    tpos = addr + n_ent * 0x20
+    for name, ents in data.items():
+        heads[MS_MOVIES.index(name)] = addr + len(tbl)
+        for e in ents:
+            b = bytes.fromhex(e["text"])
+            tbl += struct.pack("<IffIQII", e["kind"], e["start"], e["end"], 0, tpos + len(txt), len(b), e["lines"])
+            txt += b
+        tbl += struct.pack("<IffIQII", 0, -1.0, -1.0, 0, 0, 0, 0)
+    return bytes(tbl + txt), heads
 
 
 def tex2x_main(secs, only_new, jp=False):
@@ -161,7 +180,26 @@ def tex2x(h, base, secs, jp=False):
     end, last, last_code = time.time() + secs, None, {}
     full = open(SF_FULL, "rb").read() if jp and "nosf" not in OFF else b""
     sf_buf = None
+    ms_data = json.load(open(MS_JSON, encoding="utf-8")) if jp and "nomovie" not in OFF and os.path.exists(MS_JSON) else None
+    ms_heads = None
     while time.time() < end:
+        if ms_data:
+            if ms_heads is None:
+                size = len(movie_sub_blob(ms_data, 0)[0])
+                k32.VirtualAllocEx.argtypes = [wt.HANDLE, ctypes.c_void_p, ctypes.c_size_t, wt.DWORD, wt.DWORD]
+                k32.VirtualAllocEx.restype = ctypes.c_void_p
+                ms_buf = k32.VirtualAllocEx(h, None, size, 0x3000, 0x04)
+                if not ms_buf:
+                    raise OSError(f"VirtualAllocEx 실패 err {ctypes.get_last_error()}")
+                blob, ms_heads = movie_sub_blob(ms_data, ms_buf)
+                wr_abs(h, ms_buf, blob)
+                print(f"[{time.strftime('%H:%M:%S')}] 영상 자막 {sum(map(len, ms_data.values()))}줄 -> {ms_buf:#x}", flush=True)
+            for m, addr in ms_heads.items():
+                for lang in MS_LANGS:
+                    slot = base + MS_TBL + (m * 7 + lang) * 8
+                    if struct.unpack("<Q", rd_abs(h, slot, 8))[0] != addr:
+                        wr_abs(h, slot, struct.pack("<Q", addr))
+                        print(f"[{time.strftime('%H:%M:%S')}] 영상 자막 {MS_MOVIES[m]} 언어 {lang} -> {addr:#x}", flush=True)
         if full:
             ptr = struct.unpack("<Q", rd(h, base, SF_PTR, 8))[0]
             if ptr == base + SF_STATIC:
@@ -258,7 +296,7 @@ def main(argv):
     if not argv:
         print(__doc__); return 2
     if argv[0] == "tex2x":
-        OFF.update(a for a in argv[2:] if a in ("nocode", "nosf"))
+        OFF.update(a for a in argv[2:] if a in ("nocode", "nosf", "nomovie"))
         print(f"끔: {sorted(OFF) or '없음'}", flush=True)
         tex2x_main(float(argv[1]) if len(argv) > 1 else 1800, "new" in argv[2:], "jp" in argv[2:])
         return 0

@@ -1527,3 +1527,13 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
 - 사용자 요청: Steam 판 기준, README 를 "킹덤 하츠 한글화 프로젝트" 소개로 (중요성·진행 방법·성과). 수치는 work-history·build 산출물에서 확인한 값만 사용 (번역 약 7,800줄, 메시지 약 75만, 대화창 글자 1,070, 시스템 글자 928, 그림 67, 실험 55차). 번역 초안이 AI 라는 점 명시.
 - 6-85 계속: 라이선스 Apache-2.0 (LICENSE/NOTICE), 게임 저작권 고지(게임 내 title/copyright.tm2 문구 그대로: Disney, Edgar Rice Burroughs(타잔), Square Enix), 실행 파일에 묶인 제3자 라이선스 15종 third_party/licenses.
   사용자 유의 사항 10항 (README, 배포 README.txt, NOTICE 영문). 설치 프로그램: 시작 시 로그에 요약, 설치 전 동의 창 (아니요면 설치 안 함, 화면 확인).
+
+### 6-86. 56차: 영상 한국어 자막 (2026-11-03)
+- 사용자 요청: 자막 없는 영상(소라 독백)과 그 뒤 영상에도 한글 자막.
+- 영상 = STEAM/dt/KH1Movie/*.mp4, 앞 0x100B XOR (키 exe-analysis 5-2). 음성 인식(faster-whisper, 분석용)과 화면 추출로 내용 확인:
+  OPN 소라 독백 2줄 (영어판 자막 없음), END 대사 14 + 마지막 문구 (영어 자막 있음), EXM·LOP 는 음성 없이 영상에 박힌 영어 글씨 (일본어판만 자막), ENX 없음.
+- exe 에 언어별 영상 자막 표 0x4e5c80 이 있고 대화창 글꼴로 그린다 -> 새 그림/오버레이 없이 표만 붙이면 된다.
+- tools/moviesub.py + translation/src/movie_sub.tsv (25줄; 시각은 exe 의 독일어(OPN, EXM)·영어(END)·일본어(LOP) 칸 값). build_ko 가 글자 배정에 넣고 translation/build/movie_sub.json 을 씀. mem.py tex2x jp 가 게임 안 버퍼에 표를 만들어 영어 칸(1, 2) 포인터를 바꿈 (진단 끄기: nomovie). 새 글자 0 (글자 배정 그대로).
+- END 의 "the king's seal" 은 편지의 인장 -> dc01 대사 "봉인" 도 "인장" 으로 고침 (백업 openkh_backups/kh1_evmsg.before_seal.tsv).
+- 인게임 확인 (직접): 새 게임 오프닝에서 두 줄 정상. 시험 주입(OPN 칸에 LOP 5줄, END 2줄, END 마지막 문구, EXM 따옴표를 오프닝 시간대로)으로 종류 1/4/131075, 1·2줄 모두 정상 그려짐 확인. END·LOP·EXM 실제 장면에서는 미확인 (게임 끝까지 가야 함).
+- 설치 프로그램 0.2.0.
