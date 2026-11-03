@@ -21,4 +21,4 @@
   panacea_settings.txt 의 모드 경로가 이 패치로 바뀌며, 제거하면 원래대로 돌아갑니다.
 - 게임이 업데이트되면 '한글 패치 설치' 를 한 번 더 누르세요.
 - 시어터 모드(Theater)는 한글화되지 않았습니다.
-- OpenKH 는 Apache License 2.0 입니다 (licenses 폴더).
+- 이 패치와 OpenKH 는 Apache License 2.0 입니다 (licenses 폴더).

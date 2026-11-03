@@ -1,0 +1,13 @@
+KoreanHearts - Kingdom Hearts Korean Localization Project
+Copyright 2026 Inho Lee
+
+This product includes software developed by the OpenKH Team and Contributors
+(https://github.com/OpenKH/OpenKh), licensed under the Apache License 2.0:
+  - tools/pkgextract.py ports the package format handling of OpenKh.Egs to Python.
+  - Release packages bundle OpenKH.Panacea.dll (see third_party/).
+
+This is an unofficial fan translation, not affiliated with Square Enix or Disney.
+KINGDOM HEARTS and all related game data, names and text are the property of
+their respective owners. No original game data is included in this repository
+or its releases; the license above covers only the original work of this project
+(code, documentation and Korean translation text).

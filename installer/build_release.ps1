@@ -13,6 +13,8 @@ if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force "$out\licenses" | Out-Null
 Copy-Item "dist\KH1Korean.exe" $out
 Copy-Item "installer\README-release.txt" "$out\README.txt"
+Copy-Item "LICENSE" "$out\licenses\LICENSE-KoreanHearts.txt"
+Copy-Item "NOTICE" "$out\licenses\NOTICE-KoreanHearts.txt"
 Copy-Item "third_party\LICENSE-OpenKH.txt", "third_party\NOTICE-OpenKH.txt" "$out\licenses"
 $zip = "release\KH1Korean-$ver.zip"
 if (Test-Path $zip) { Remove-Item $zip }

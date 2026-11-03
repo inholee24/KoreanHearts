@@ -191,4 +191,4 @@ Python 3.13 + Pillow가 필요하고, 맑은 고딕(`C:\Windows\Fonts\malgun*.tt
 - 이 프로젝트는 비공식 팬 번역이며 Square Enix, Disney와 관계가 없습니다. 게임 데이터의 권리는 각 권리자에게 있습니다.
 - [tools/pkgextract.py](tools/pkgextract.py)의 형식 처리는 OpenKH(Apache License 2.0)의 `OpenKh.Egs`를 Python으로 옮긴 것입니다.
 - 배포 파일에 포함되는 `OpenKH.Panacea.dll`은 OpenKH의 것입니다([LICENSE](third_party/LICENSE-OpenKH.txt), [NOTICE](third_party/NOTICE-OpenKH.txt)).
-- 이 저장소 자체의 라이선스는 아직 정하지 않았습니다.
+- 이 저장소의 코드, 문서, 한국어 번역문은 [Apache License 2.0](LICENSE)을 따릅니다([NOTICE](NOTICE)). 라이선스는 이 프로젝트가 직접 만든 부분에만 적용되며, 게임 원작의 이름·설정·내용에 대한 권리를 부여하지 않습니다.
