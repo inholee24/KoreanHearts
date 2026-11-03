@@ -1,0 +1,6 @@
+uk/ctd/ct00100.ctd
+uk/font/menufont.cod
+uk/font/menufont.inf
+uk/font/menufont.tm2
+uk/l2d/pause.l2d
+uk/l2d/setting_1525.l2d

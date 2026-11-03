@@ -1,0 +1,93 @@
+# rva	name	설명 (근거: work-history 절 번호)
+# --- 텍스트 / 폰트 ---
+0x175ae0	kanji_cell_xy	대화창 글리프 셀 좌표 (page=idx/(21*rows), col=%21). page 비트0 -> U+512, 비트1 -> V+512 = 같은 텍스처의 사분면. page>=4 는 처리 안 함. 6-18, 6-48
+0x2d0c37	msg_to_unicode_a	메시지 -> 유니코드(+8 필드) 변환 루프. 6-36
+0x2d35f0	msg_to_unicode_b	메시지 -> 유니코드(+8 필드) 변환, 글자 수 반환. 6-36
+0x2d0e10	msg_measure_width	문자열 폭 측정: sum((ui_font[idx].+6<<4)+spacing)*scale. 6-36
+0x2d1570	font_tbl_init	ui_font_tbl 포인터 설정, exchange/US_font_data_tbl.bin 로드 (JP는 FM_font). 6-36
+0x2e16be0	g_ui_font_tbl	(data) 16B 글자 레코드 표 포인터. +4 x?, +6 폭, +8 유니코드
+0x2e16bf0	ui_font_tbl_buf	(data) US_font_data_tbl.bin 적재 버퍼 (560 x 16B)
+# --- 대화창 텍스트 배치 (kanji 모듈, 0x170000대) ---
+0x176430	kanji_load	exchange/UK|JP/kanji.knj -> kanji_buf, 512x512 텍스처 생성(0x10bdf0). JP 일 때만 +0x94/+0x96 을 x2 (1024). 분기 0x1764b6-0x1764bd. 6-48
+0x22ec400	kanji_buf	(data) kanji.knj 적재 버퍼. +0x40080 = 대화창 폭 표
+0x232c480	kanji_width_tbl	(data) 대화창 글자 폭 표 (kanji_buf+0x40080), byte[1344]
+0x1767b0	msg_layout	메시지 배치: 글자별 x 위치 계산(폭*0.8333 또는 1.0), 줄 폭을 line_width[] 에 기록
+0x232d400	line_width	(data) int[] 줄별 폭 (msg_layout 결과)
+0x22ec3d8	line_count	(data) int 줄 수 (msg_layout 결과)
+0x174fe0	msg_get_size	msg_layout 실행 후 최대 줄 폭 반환, *arg2 = 줄 수
+0x175320	msg_width_units	msg_get_size/6 + 1 (창 폭 칸 수)
+0x1764e0	win_show_msg	(pdata 없음) 창 슬롯에 메시지 표시 시작 (창, 메시지 포인터, 다음 콜백)
+0x173470	win_open	창 슬롯 열기 (창, 콜백, 플래그)
+# --- 이벤트 스크립트 VM ---
+0x1b3530	vm_dispatch	핸들러 = vm_op_table[opcode]. 스택: ctx+0x18C.., sp = ctx+0x194
+0x4fa870	vm_op_table	(data) 함수 포인터 764개 (opcode 0..763). re_index/vm_opcodes.tsv
+0x1b8dd0	op001_msg_queue	op1: 슬롯 대기열에 메시지 번호 추가, 대기 중이면 표시 시작
+0x1b98f0	op005_tpl_type	op5: 템플릿.+4 (word) 설정
+0x1b7f40	op153	op153: 0x23d4250/4 (창 슬롯 +0x30/+0x34) 설정
+0x1b9940	op179_tpl_pair	op179: 템플릿 두 개를 대각 배치 기본값으로 (폭 10, 높이 2, ±100/±120)
+0x1b7c80	op365_tpl_size_msg	op365: 템플릿 폭 = msg_width_units(메시지), 끝 좌표 = 중심 + 칸*12
+0x1b7d60	op695_tpl_size_item	op695: 템플릿 폭 = 아이템 등 이름 폭
+0x1b920f	tpl_apply_a	템플릿을 창 슬롯에 복사 후 win_open
+0x1b942c	tpl_apply_b	템플릿을 창 슬롯에 복사 후 win_open (일부 장면 보정)
+0x1b8cf0	win_next_msg_a	대기열 다음 메시지 표시 콜백
+0x1b9310	win_next_msg_b	대기열 다음 메시지 표시 콜백
+0x237c4e0	msg_ptr_tbl	(data) 메시지 포인터 배열 [메시지 번호] (.binl 에서 적재)
+0x237f4f0	win_state	(data) byte[4] 창 슬롯 상태 (4=대기, 2=표시중, 1=열림)
+0x237f500	win_msg_queue	(data) word[4][256] 슬롯별 메시지 번호 대기열
+0x2380500	win_msg_qcount	(data) int[4] 대기열 길이
+0x23d4220	win_slots	(data) 창 슬롯 4개, 0xD0 바이트씩
+0x23d4560	win_templates	(data) 창 템플릿, 0xD0 바이트씩. +4 종류, +0x30/+0x34 끝좌표, +0x40 폭(칸), +0x44 높이(칸)
+0x42f95c	f_12	(data) float 12.0 (창 칸 -> 좌표)
+0x3e2d84	f_0_8333	(data) float 0.8333 (배치 폭 배율)
+0x1b97d0	op004_tpl_size	op4(tpl, w, h): win_templates[tpl].+0x40 = w, +0x44 = h (정수 -> float). 선택지 창 폭은 이것으로 스크립트가 지정
+# --- 바이트코드 인터프리터 ---
+0x4e5db0	vm_insn_table	(data) 바이트코드 명령 처리 함수 32개. 명령 = [피연산자 24bit LE 부호있음][명령 1B]
+0x1a2320	vm_run_a	인터프리터 루프 (ctx 0x360 바이트 간격 배열 순회). 반환 비트 2=다음, 4=양보, 8=대기
+0x1a38a0	vm_run_b	인터프리터 루프 (명령 5는 별도 처리)
+0x19f8c0	insn02_jmp	pc += operand
+0x19f8e0	insn03_jz	pop; 0이면 pc += operand
+0x19f930	insn06_pop_var	pop -> var[operand]
+0x19fb30	insn09_push	push operand (즉값). 스크립트에서 가장 흔한 push
+0x19fbc0	insn10_push_local	push local[operand] (ctx+0x21C)
+0x1a0010	insn11_pop_local	pop -> local[operand]
+0x1ba880	insn01_alu	alu_table[operand](ctx): 0 add 1 sub 2 mul 3 div 4 mod 5 neg 6 eq 7 gt 8 ge 9 lt 10 le 11 ne 12 and 13 or 14 xor 15 not 16 sar 17 shl
+0x4fd850	vm_alu_table	(data) insn01 의 연산 함수 18개
+0x1a0a20	insn21_push	push operand (특정 장면 예외 있음)
+0x1a0960	insn31_flag_set	저장 플래그 비트 설정
+0x19ffa0	insn30_flag_get	저장 플래그 비트 읽기
+0x2cee20	save_area_ptr	저장 데이터 영역 포인터 (0..7)
+0x18d130	font_lang_setup	언어별 대화창 글꼴 배치: 영어 등 rows=16,rowH=32,count=0x540 / JP(0,7) rows=21,rowH=24,count=0x6e4. 6-48
+0x4de830	kanji_rows_per_page	(data) int 페이지당 줄 수 (영어 16, JP 21). 0x18d130 에서 설정
+0x4de834	kanji_row_height	(data) int 줄 높이 PS2 px (영어 32, JP 24)
+0x2340ba8	kanji_glyph_count	(data) int 글자 수 (영어 1344, JP 1764)
+0x22ec3c8	kanji_tex	(data) kanji_buf 텍스처 객체 포인터. +0x94/+0x96 = 폭/높이 (영어 512, JP 는 x2 = 1024)
+0x10bdf0	tex_create_from_buf	(mgr, 버퍼, w, h) PS2 텍스처 생성 + HD 교체 텍스처(DDS) 연결. 키 = 버퍼의 파일 내 오프셋
+0x10db60	buf_file_offset	버퍼 주소 - 파일 시작 (HD 교체 키)
+0xe1680	hd_tex_container_load	remastered\<파일>\ 폴더의 dds/png 등록. 이름 끝 번호(16진) = 키, 0 이면 0x10000000
+0x122510	parse_hex_until_dot	16진 문자열 파싱 ('.' 에서 멈춤)
+0x1a43a0	ev_load_msgs_scripts	이벤트 데이터 적재: 헤더 [+0xC] = 메시지 블록 (u32 N + 메시지), msg_ptr_tbl 채움 (스캐너 0x1A45D0), 스크립트 시작
+0x1a45d0	msg_scan_loop	메시지 끝(04/00) 찾기. 코드 길이 규칙 = tools/evmsg.py code_len
+0x176f80	msg_layout_bad_lead	2바이트 b0-0x19 를 공백(01) 과 같은 레지스터로 비교 -> b0=0x1A 가 공백 처리되는 버그
+0x176021	kanji_quad_h_rowh	kanji_cell_xy 안: 비일본어·크기!=20 글자 사각형 높이 = [0x4DE834]. 크기 20(대화창)은 크기+8. 32차 jp 배치에서 32 로 패치 (mem.py JP_CODE)
+0x2340ba0	msg_line_step_a	(data) 줄 간격 rowH+4 (0x3830 정적 초기화, JP 는 0x18d130 에서 28). msg_layout 0x176ab5
+0x2340ba4	msg_line_step_b	(data) 줄 간격 rowH+13 (0x3820, JP 37). msg_layout 0x176aab
+0x177640	msg_layout_ctl_tbl	(data) msg_layout 제어 코드 0x00~0x1F 핸들러 점프 표 (rel32). 35차
+0x176d27	msg_ctl_0d_speed	0x0D: 00=표시 속도 128/n, 01=페이드. 배치 영향 없음
+0x176c34	msg_ctl_0b_xmove	0x0B: x 위치 이동 (00 상대, 01 절대, 10 부호 상대)
+0x176a82	msg_ctl_02_newline	0x02: 줄바꿈. 자동 줄바꿈 경로는 없음
+0x213520	sawe_load	exchange/%s_SAWEMSG/SAWEOMSG + worldmap/gevent.bin 적재 -> 0x268ddd0/d8. 39차
+0x1f5110	sawe_msg_show	0x506fc0/c8(SAWE 데이터/표)를 0x2d35d0 으로 UI 글꼴 메시지 표에 걸고 0x2d2970 으로 글자 객체 생성 = 시스템 글꼴. 39차
+0x2d35d0	ui_msg_tbl_set	(데이터, 오프셋 표) -> 0x2e1ac48/0x2e1ac50 (UI 글꼴 텍스트 모듈의 현재 메시지 표). 39차
+0x2d2970	ui_msg_text	UI 메시지 표[번호] 로 시스템 글꼴 글자 객체 생성 (0x2d2050). 39차
+0x2cfbf0	ui_font_draw	UI(시스템) 글꼴 문자열 그리기. 레코드 X/Y/폭 -> GS 패킷 (TEX2: PSM=0x52A6F8[+7>>4], CSA=+7&0xF), 소스 높이 [0x545344]=24. 40차
+0x304483	gs_sprite_hd_uv	스프라이트 UV -> HD px: CSA==1 이면 u+0x1000, PSM==4HH(0x2C) 이면 v+0x1000, hd=(2*uv-8)/16. TBP 0x3D80 은 예외. 40차
+0x2d18f0	sysfont_load	menu/<lang>/sysfont.bin -> 256x512 텍스처 (0x10bdf0), +0x94/+0x96 = +0x7c/+0x7e (= HD DDS 실제 크기), TBP 0x1000 PSM 0x24/0x2C 로 등록 (0x10dc50). 40차
+0x10dc50	tex_register_tbp	(TBP, ?, 텍스처, PSM, ?) -> 텍스처 맵 0x22c8fc0 에 등록. 40차
+0x141fa1	tex_uv_scale	1/nextpow2(+0x94), 1/nextpow2(+0x96) -> 0x22dad80/84 (논리 크기로 UV 정규화). 40차
+0x545344	ui_font_height	(data) int UI 글꼴 소스 높이 (PS2 px). 정적 18, 0x2e99ad 에서 24 로 씀
+0x52a6f8	ui_font_psm_tbl	(data) [+7]>>4 -> PSM: 0 = 0x24 (4HL), 1 = 0x2C (4HH)
+0x2e16bf0	ui_font_tbl_buf2	(data) UI 글꼴 표 정적 버퍼 0x4000B = 1024 레코드 (다음 전역 0x2E1ABF0). 원본 파일은 560
+0x28f9d0	btltbl_load	btltbl.bin 적재 + HD 자산 Word/ItemHelp/AbilityHelp/AbilityName 문자열 목록을 표에 등록. 42차
+0x28f820	ui_str_next	(rcx 문자열, edx 0=처음/1=다음) 시스템 글꼴 문자열 끝(00/10)까지 제어 길이 규칙으로 넘김. 42차
+0x176df3	msg_ctl_0e_insert	대화창 0x0E xx: 아이템 이름(0x28f9b0)·어빌리티 이름(0x28f8f0) 등 문자열 삽입. 42차
+0x2d22f98	word_ptr_tbl	(data) Word 문자열 핸들 u32 x 512. 42차

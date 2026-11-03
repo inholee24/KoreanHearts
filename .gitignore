@@ -1,0 +1,21 @@
+# 게임 원본과 원본에서 만든 결과물 (저장소·배포에 넣지 않는다)
+/data/
+/mod/
+/translation/*.tsv
+/translation/build/
+/translation/work/
+*.orphans.tsv
+
+# 빌드
+/.venv-build/
+/build/
+/dist/
+/release/
+__pycache__/
+*.pyc
+
+# 제3자 바이너리 (OpenKH 릴리스에서 복사, 라이선스 파일은 저장소에 둔다)
+/third_party/*.dll
+
+# 게임 화면 캡처 (작업 기록용, 로컬에만)
+/docs/images/
