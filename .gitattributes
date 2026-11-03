@@ -1,0 +1,4 @@
+# 도구가 표·목록을 LF 기준으로 읽는다 (Windows 체크아웃에서도 CRLF 로 바꾸지 않음)
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.dll binary
