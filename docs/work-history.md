@@ -1550,3 +1550,10 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
   로컬 서버(KH1KO_UPDATE_API/ZIP 시험용 환경 변수)로 가짜 커밋 1111… (movie_sub OPN 첫 줄 순서 바꿈) -> --install: 받은 도구 경로에서 불러옴(로그), 바뀐 자막이 movie_sub.json 에 들어감, 검증 문제 0. 두 번째 설치는 받아 둔 것 사용.
   --play: mem 을 KH1Korean/tools/re 에서 불러옴. 게임 화면 확인은 Steam '로그인 새로고침' 창 때문에 게임이 안 켜져 못 함. --uninstall 후 panacea_settings.txt 바이트 동일, 가짜 캐시 삭제.
 - 이 기능은 update.json 이 들어간 커밋을 push 한 뒤부터 동작. 0.2.0 이하 설치 프로그램에는 이 기능이 없어 0.3.0 은 한 번 새로 받아야 함.
+
+### 6-88. 타이틀 대기 영상 확인 (2026-11-04, exe 분석)
+- 사용자 질문: 타이틀에 오래 있으면 나오는 영상에도 자막이 있나.
+- 처음엔 게임을 켜서 확인하려 했으나 캡처 때문에 창 포커스를 계속 가져가 대기 상태가 깨짐 -> 사용자 중단. 이런 질문은 exe 분석으로 답한다.
+- exe: 타이틀 쪽 카운터(2505 프레임)가 0 이 되면 상태 13 요청 -> 상태 13 이 영상 3번 LOP 재생 (exe-analysis 5-2). LOP = 6-86 에서 "카이리의 편지" 로 잘못 부른 영상 (영상에 박힌 영어 글씨 5장면, "Thinking of you, wherever you are." ~ "one sky, one destiny.") -> 이미 한국어 자막 5줄이 들어가 있음.
+  사용자 지적: "카이리의 편지" 는 KH2 영상. 사용자가 준 영상(YouTube "Kingdom Hearts 1 Idle Video [Simple and Clean Orchestra]")이 LOP 와 같은 문구. 이름을 "타이틀 대기 영상" 으로 정정 (README, 릴리스 노트).
+- 실제 대기 재생 화면에서는 아직 확인 안 함 (자막 형식은 6-86 시험 주입으로 확인).
