@@ -1537,3 +1537,16 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
 - END 의 "the king's seal" 은 편지의 인장 -> dc01 대사 "봉인" 도 "인장" 으로 고침 (백업 openkh_backups/kh1_evmsg.before_seal.tsv).
 - 인게임 확인 (직접): 새 게임 오프닝에서 두 줄 정상. 시험 주입(OPN 칸에 LOP 5줄, END 2줄, END 마지막 문구, EXM 따옴표를 오프닝 시간대로)으로 종류 1/4/131075, 1·2줄 모두 정상 그려짐 확인. END·LOP·EXM 실제 장면에서는 미확인 (게임 끝까지 가야 함).
 - 설치 프로그램 0.2.0.
+
+### 6-87. 설치 프로그램이 GitHub 최신 번역을 받아 쓰기 (2026-11-04)
+- 사용자 요청: GitHub 에 push 하면 사용자가 설치 프로그램을 새로 받지 않아도 되게.
+- installer/update.py: 실행 때 GitHub API 로 main 최신 커밋 sha 확인 -> codeload zip 에서 tools/, translation/src/, installer/update.json 만 %LOCALAPPDATA%/KH1Korean/src/<sha> 에 받음 (이전 것은 지움).
+  받은 커밋의 installer/update.json min_app > 프로그램 VERSION 이거나 update.json 이 없으면(이 기능 이전 커밋) 쓰지 않음 -> 받아 둔 것 또는 묶인 것. 인터넷 실패도 같음. 개발 실행(비 frozen)과 KH1KO_NO_UPDATE 는 끔.
+- 도구 모듈: 실행 파일 안 모듈보다 받은 tools 를 먼저 찾는 meta path finder (tools/*.py 이름 + mem 만, 표준 라이브러리 이름 제외: tools/re/dis.py 가 dis 를 가리지 않음 확인).
+- 설치 때 tools 를 <게임>/KH1Korean/tools 로 복사, 메모리 패치(mem)는 그 판을 씀 (설치된 번역과 같은 판). install.json 에 source(sha).
+- 화면: 확인이 끝날 때까지 버튼 잠금. 설치된 source != 최신 -> '한글 패치 업데이트' 버튼, 게임 실행 때 업데이트 여부 질문. 업데이트는 동의 창 생략. 유의 사항 8항 (네트워크) 문구 변경.
+- build_release.ps1 이 build/source.txt (HEAD, 변경 있으면 -dirty) 를 묶음 -> 최신이 묶인 것과 같으면 받지 않음.
+- 시험 (0.3.0 exe): 실제 GitHub main(b8f1c18, update.json 없음) -> 받은 뒤 쓰지 않고 묶인 번역 사용, 두 번째부터는 다시 받지 않음.
+  로컬 서버(KH1KO_UPDATE_API/ZIP 시험용 환경 변수)로 가짜 커밋 1111… (movie_sub OPN 첫 줄 순서 바꿈) -> --install: 받은 도구 경로에서 불러옴(로그), 바뀐 자막이 movie_sub.json 에 들어감, 검증 문제 0. 두 번째 설치는 받아 둔 것 사용.
+  --play: mem 을 KH1Korean/tools/re 에서 불러옴. 게임 화면 확인은 Steam '로그인 새로고침' 창 때문에 게임이 안 켜져 못 함. --uninstall 후 panacea_settings.txt 바이트 동일, 가짜 캐시 삭제.
+- 이 기능은 update.json 이 들어간 커밋을 push 한 뒤부터 동작. 0.2.0 이하 설치 프로그램에는 이 기능이 없어 0.3.0 은 한 번 새로 받아야 함.

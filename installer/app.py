@@ -7,8 +7,9 @@
 import ctypes, json, os, queue, re, shutil, subprocess, sys, threading, time, traceback
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
+import update
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 APP_ID = "2552430"
 GAME_DIR_NAME = "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-"
 WORK_NAME = "KH1Korean"
@@ -22,7 +23,7 @@ NOTICE_KO = """[사용 전 확인]
 - 한글 파일은 이 PC 의 게임 파일로 만들어집니다. 만들어진 파일(KH1Korean 폴더)은 게임 데이터를 바탕으로 하므로 다른 사람에게 공유하거나 재배포하지 마세요.
 - 게임 원본 파일은 바꾸지 않지만, 모드 로더(Panacea)를 설치하고 게임 실행 중 메모리를 고칩니다. 이용약관 관련 판단과 사용에 따른 책임은 사용자에게 있습니다.
 - 아무런 보증 없이 제공됩니다 (Apache License 2.0). 세이브 데이터는 미리 백업하세요.
-- 이 프로그램은 인터넷으로 정보를 보내지 않습니다.
+- 실행할 때 GitHub(github.com)에서 최신 번역이 있는지 확인하고 받습니다. 그 밖의 정보는 보내지 않습니다.
 """
 
 
@@ -81,7 +82,8 @@ def load_state(game):
         return None
 
 
-def install(game, log):
+def install(game, log, src):
+    """src: update.Source (번역 표·도구를 읽을 곳)."""
     game = os.path.normpath(game)
     for f in FONTS:
         if not os.path.exists(f):
@@ -89,14 +91,16 @@ def install(game, log):
     work = work_dir(game)
     os.makedirs(work, exist_ok=True)
     old = load_state(game) or {}
-    # 번역 표 (원문 없음) 를 작업 폴더로
-    shutil.rmtree(os.path.join(work, "translation"), ignore_errors=True)
-    shutil.copytree(os.path.join(BASE, "translation", "src"), os.path.join(work, "translation", "src"))
-    for d in ("data", "mod"):
+    log(f"번역 {src.short}")
+    # 번역 표 (원문 없음) 와 도구를 작업 폴더로. 도구는 게임 실행 때 메모리 패치(mem)가 같은 판을 쓰게 하려고 둔다
+    for d in ("translation", "tools", "data", "mod"):
         shutil.rmtree(os.path.join(work, d), ignore_errors=True)
+    shutil.copytree(os.path.join(src.root, "translation", "src"), os.path.join(work, "translation", "src"))
+    shutil.copytree(os.path.join(src.root, "tools"), os.path.join(work, "tools"), ignore=shutil.ignore_patterns("__pycache__"))
     os.environ["KH1KO_ROOT"] = work
-    sys.path.insert(0, TOOLS)
+    update.use_tools(os.path.join(src.root, "tools"))
     import pkgextract
+    log(f"    도구: {os.path.dirname(pkgextract.__file__)}")
     log("1/6 게임 파일에서 필요한 원본 꺼내기 (약 2GB, 1분 안팎)")
     n = pkgextract.extract_all(game, work, log)
     log(f"    {n}개 꺼냄")
@@ -117,7 +121,7 @@ def install(game, log):
         raise RuntimeError("검증 실패 (로그 확인)")
     log("6/6 정리 및 Panacea 설정")
     shutil.rmtree(os.path.join(work, "data"), ignore_errors=True)      # 꺼낸 원본은 지운다
-    st = {"version": VERSION, "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+    st = {"version": VERSION, "source": src.sha, "time": time.strftime("%Y-%m-%d %H:%M:%S"),
           "dll_installed_by_us": old.get("dll_installed_by_us", False),
           "settings_backup": old.get("settings_backup")}
     dll = os.path.join(game, "DBGHELP.dll")
@@ -168,8 +172,10 @@ def start_patcher(game, log):
     if _patcher and _patcher.is_alive():
         return
     os.environ["KH1KO_ROOT"] = work_dir(game)
-    sys.path.insert(0, os.path.join(TOOLS, "re"))
+    t = os.path.join(work_dir(game), "tools")
+    update.use_tools(t if os.path.exists(os.path.join(t, "re", "mem.py")) else TOOLS)
     import mem
+    log(f"    도구: {os.path.dirname(mem.__file__)}")
 
     def run():
         while True:
@@ -216,13 +222,29 @@ class App:
             b.pack(side="left", padx=4)
         self.status = tk.Label(root, anchor="w"); self.status.pack(fill="x", padx=12, pady=4)
         self.log = scrolledtext.ScrolledText(root, height=18, state="disabled", wrap="word"); self.log.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-        self.refresh()
+        self.src = None
         self.say(NOTICE_KO)
+        self.busy(True)
+        self.refresh()
         root.after(100, self.pump)
+        threading.Thread(target=self.check_update, daemon=True).start()
+
+    def check_update(self):
+        try:
+            src = update.resolve(BASE, VERSION, self.say)
+        except BaseException as e:
+            self.say(f"최신 번역 확인 오류: {e!r}")
+            src = update.Source(BASE, update.bundled_sha(BASE), False)
+        self.say(f"번역 {src.short}" + (" (최신)" if src.latest else ""))
+        self.src = src
+        self.root.after(0, self.done)
+
+    def outdated(self, st):
+        return bool(st and self.src and self.src.latest and st.get("source") != self.src.sha)
 
     def install(self):
-        if messagebox.askyesno("설치 전 확인", NOTICE_KO + "\n위 내용을 확인했고 동의합니까?"):
-            self.task(install)
+        if load_state(self.game.get()) or messagebox.askyesno("설치 전 확인", NOTICE_KO + "\n위 내용을 확인했고 동의합니까?"):
+            self.task(lambda g, log: install(g, log, self.src))
 
     def say(self, s):
         self.q.put(s)
@@ -244,34 +266,57 @@ class App:
             self.status.config(text="게임 폴더를 찾지 못했습니다. '찾아보기' 로 지정하세요.")
             return
         st = load_state(g)
-        self.status.config(text=f"설치됨 (버전 {st['version']}, {st['time']})" if st else "설치 안 됨")
+        if not st:
+            self.status.config(text="설치 안 됨" if self.src else "설치 안 됨 (최신 번역 확인 중)")
+            self.b_inst.config(text="한글 패치 설치")
+            return
+        text = f"설치됨 (버전 {st['version']}, 번역 {st.get('source', '?')[:7]}, {st['time']})"
+        if self.outdated(st):
+            text += f" - 새 번역 {self.src.short} 이 있습니다. '한글 패치 업데이트' 를 누르세요"
+        self.status.config(text=text)
+        self.b_inst.config(text="한글 패치 업데이트" if self.outdated(st) else "다시 설치")
+
+    def busy(self, on):
+        for b in (self.b_inst, self.b_play, self.b_un):
+            b.config(state="disabled" if on else "normal")
 
     def task(self, fn, after=None):
         g = self.game.get()
         if not is_game_dir(g):
             messagebox.showerror("게임 폴더", "게임 폴더가 올바르지 않습니다."); return
-        for b in (self.b_inst, self.b_play, self.b_un):
-            b.config(state="disabled")
+        self.busy(True)
 
         def run():
+            ok = False
             try:
                 fn(g, self.say)
+                ok = True
             except BaseException as e:
                 self.say("오류: " + "".join(traceback.format_exception_only(type(e), e)).strip())
                 self.say(traceback.format_exc())
             finally:
                 self.root.after(0, self.done)
+                if ok and after:
+                    self.root.after(0, after)
         threading.Thread(target=run, daemon=True).start()
 
     def done(self):
-        for b in (self.b_inst, self.b_play, self.b_un):
-            b.config(state="normal")
+        self.busy(self.src is None)
         self.refresh()
 
     def play(self):
         g = self.game.get()
-        if not load_state(g):
+        st = load_state(g)
+        if not st:
             messagebox.showinfo("게임 실행", "먼저 '한글 패치 설치' 를 하세요."); return
+        if self.outdated(st):
+            a = messagebox.askyesnocancel("새 번역", f"새 번역({self.src.short})이 있습니다. 업데이트한 뒤 게임을 켤까요?\n"
+                                         "(몇 분 걸립니다. '아니요' 는 지금 설치된 번역으로 켭니다)")
+            if a is None:
+                return
+            if a:
+                self.task(lambda g, log: install(g, log, self.src), after=self.play)
+                return
         start_patcher(g, self.say)
         os.startfile(f"steam://rungameid/{APP_ID}")
         self.say("게임을 켭니다. 런처에서 KINGDOM HEARTS FINAL MIX 를 고르세요.")
@@ -291,7 +336,9 @@ def main():
                 fp.write(s + "\n"); fp.flush()
             try:
                 if sys.argv[1] == "--install":
-                    install(sys.argv[2], log)
+                    src = update.resolve(BASE, VERSION, log)
+                    log(f"번역 {src.short}" + (" (최신)" if src.latest else ""))
+                    install(sys.argv[2], log, src)
                 elif sys.argv[1] == "--uninstall":
                     uninstall(sys.argv[2], log)
                 else:                    # 게임을 켜고, 게임이 꺼질 때까지 메모리 패치

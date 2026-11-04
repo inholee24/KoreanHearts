@@ -11,7 +11,10 @@ datas = [(os.path.join(ROOT, "translation", "src", "*.tsv"), "translation/src"),
          (os.path.join(ROOT, "third_party", "OpenKH.Panacea.dll"), "third_party"),
          (os.path.join(ROOT, "third_party", "licenses", "*.txt"), "licenses"),
          (os.path.join(ROOT, "LICENSE"), "."),
-         (os.path.join(ROOT, "NOTICE"), ".")]
+         (os.path.join(ROOT, "NOTICE"), "."),
+         (os.path.join(ROOT, "installer", "update.json"), "installer")]
+if os.path.exists(os.path.join(ROOT, "build", "source.txt")):   # 묶은 번역의 커밋 (build_release.ps1 이 기록)
+    datas.append((os.path.join(ROOT, "build", "source.txt"), "."))
 
 a = Analysis([os.path.join(ROOT, "installer", "app.py")],
              pathex=[os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "re")],

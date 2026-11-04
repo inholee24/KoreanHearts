@@ -6,6 +6,11 @@ $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 if (-not (Test-Path "third_party\OpenKH.Panacea.dll")) { throw "third_party\OpenKH.Panacea.dll 없음 (OpenKH 릴리스에서 복사)" }
 $ver = (Select-String -Path "installer\app.py" -Pattern '^VERSION = "(.+)"').Matches[0].Groups[1].Value
+# 묶는 번역의 커밋. 번역·도구·설치 프로그램에 커밋 안 된 변경이 있으면 -dirty (실행 때 GitHub 최신을 받게 된다)
+New-Item -ItemType Directory -Force build | Out-Null
+$sha = (git rev-parse HEAD).Trim()
+if (git status --porcelain -- tools translation/src installer) { $sha += "-dirty" }
+Set-Content -Path "build\source.txt" -Value $sha -NoNewline -Encoding ascii
 & ".venv-build\Scripts\pyinstaller.exe" "installer\kh1ko.spec" --distpath dist --workpath build\pyi --noconfirm
 if ($LASTEXITCODE -ne 0) { throw "pyinstaller 실패" }
 $out = "release\KH1Korean-$ver"
