@@ -1,23 +1,24 @@
 """GitHub 저장소의 최신 번역·도구 받기.
 
-설치 프로그램을 다시 받지 않아도, 저장소 main 에 올린 번역 표(translation/src)와 빌드 도구(tools)를
-받아 이 PC 에서 한글 파일을 다시 만든다.
-- 최신 커밋: GitHub API (커밋 sha 만), 받기: codeload zip, 저장: %LOCALAPPDATA%\\KH1Korean\\src\\<sha>
+설치 프로그램을 다시 받지 않아도, 저장소 main 에 올린 타이틀별 번역 표(<타이틀>/translation/src)와
+빌드 도구(<타이틀>/tools)를 받아 이 PC 에서 한글 파일을 다시 만든다.
+- 최신 커밋: GitHub API (커밋 sha 만), 받기: codeload zip, 저장: %LOCALAPPDATA%\\KoreanHearts\\src\\<sha>
+- 타이틀별로 새 번역인지는 커밋 sha 가 아니라 그 타이틀 파일 내용(content_id)으로 판단한다.
 - 받은 커밋의 installer/update.json 의 min_app 보다 이 프로그램 버전이 낮으면 받은 것을 쓰지 않고
   새 설치 프로그램을 안내한다. app.py·update.py·묶인 라이브러리가 바뀌어야 하는 변경은 min_app 을 올린다.
   update.json 이 없는 커밋(이 기능 이전)은 쓰지 않는다.
 - 인터넷이 안 되면 마지막으로 받은 것, 그것도 없으면 실행 파일에 묶인 것을 쓴다.
 """
-import importlib.machinery, io, json, os, re, shutil, sys, urllib.request, zipfile
+import hashlib, importlib.machinery, io, json, os, re, shutil, sys, urllib.request, zipfile
 
 REPO = "inholee24/KoreanHearts"
 BRANCH = "main"
 RELEASES = f"https://github.com/{REPO}/releases/latest"
 API = os.environ.get("KH1KO_UPDATE_API") or f"https://api.github.com/repos/{REPO}/commits/{BRANCH}"   # 환경 변수는 시험용
 ZIP = os.environ.get("KH1KO_UPDATE_ZIP") or f"https://codeload.github.com/{REPO}/zip/{{sha}}"
-CACHE = os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~"), "KH1Korean", "src")
-HEADERS = {"User-Agent": "KH1Korean-updater"}
-KEEP = ("tools/", "translation/src/", "installer/update.json")
+CACHE = os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~"), "KoreanHearts", "src")
+HEADERS = {"User-Agent": "KoreanHearts-updater"}
+KEEP = re.compile(r"^(installer/update\.json$|[a-z0-9]+/(tools|translation/src)/)")   # <타이틀>/tools/, <타이틀>/translation/src/
 
 
 def vtuple(v):
@@ -25,7 +26,7 @@ def vtuple(v):
 
 
 class Source:
-    """번역·도구를 읽을 곳. root 아래에 tools/, translation/src/ 가 있다."""
+    """번역·도구를 읽을 곳. root 아래에 <타이틀>/tools/, <타이틀>/translation/src/ 가 있다."""
     def __init__(self, root, sha, latest):
         self.root, self.sha, self.latest = root, sha, latest   # latest: GitHub 최신으로 확인됨
 
@@ -52,8 +53,25 @@ def min_app(root):
 def usable(root, app_version):
     m = min_app(root)
     return (m is not None and vtuple(app_version) >= vtuple(m)
-            and os.path.exists(os.path.join(root, "tools", "build_ko.py"))
-            and os.path.exists(os.path.join(root, "translation", "src", "kh1_evmsg.tsv")))
+            and os.path.exists(os.path.join(root, "kh1", "tools", "build_ko.py"))
+            and os.path.exists(os.path.join(root, "kh1", "translation", "src", "kh1_evmsg.tsv")))
+
+
+def content_id(root, title):
+    """타이틀의 도구·번역 표 내용 해시. 없으면 None. 같은 커밋이면 묶인 것과 받은 것이 같은 값이다."""
+    h, n = hashlib.sha1(), 0
+    for sub in ("tools", os.path.join("translation", "src")):
+        base = os.path.join(root, title, sub)
+        for dp, dns, fns in os.walk(base):
+            dns[:] = sorted(d for d in dns if d != "__pycache__")
+            for f in sorted(fns):
+                if f.endswith(".pyc"):
+                    continue
+                p = os.path.join(dp, f)
+                h.update((sub + "/" + os.path.relpath(p, base)).replace("\\", "/").encode() + b"\0")
+                h.update(open(p, "rb").read() + b"\0")
+                n += 1
+    return h.hexdigest()[:12] if n else None
 
 
 def fetch_sha(timeout=8):
@@ -72,7 +90,7 @@ def download(sha, timeout=60):
     with zipfile.ZipFile(io.BytesIO(data)) as z:
         for info in z.infolist():
             rel = info.filename.split("/", 1)[1] if "/" in info.filename else ""   # 맨 위 "KoreanHearts-<sha>/" 제거
-            if info.is_dir() or not rel.startswith(KEEP) or ".." in rel.split("/"):
+            if info.is_dir() or not KEEP.match(rel) or ".." in rel.split("/"):
                 continue
             out = os.path.join(tmp, *rel.split("/"))
             os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -129,10 +147,11 @@ def resolve(base, app_version, log):
             return cached(app_version) or own
     if not usable(root, app_version):
         m = min_app(root)
-        if m is None:
+        if m is None or vtuple(app_version) >= vtuple(m):      # update.json 이 없거나 폴더 구성이 다른 (옛) 커밋
             log("저장소 최신 커밋이 이 프로그램과 맞지 않아 묶여 있는 번역을 씁니다.")
         else:
-            log(f"최신 번역은 설치 프로그램 {m} 이상이 필요합니다. 새 설치 프로그램을 받아 주세요: {RELEASES}")
+            log(f"최신 번역은 설치 프로그램 {m} 이상이 필요합니다. 새 판이 릴리스되면 실행할 때 자동으로 바뀝니다. "
+                f"직접 받으려면: {RELEASES}")
         return cached(app_version, exclude=(sha,)) or own
     prune(sha)
     return Source(root, sha, True)

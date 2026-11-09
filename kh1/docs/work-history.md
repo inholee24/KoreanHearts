@@ -1557,3 +1557,49 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
 - exe: 타이틀 쪽 카운터(2505 프레임)가 0 이 되면 상태 13 요청 -> 상태 13 이 영상 3번 LOP 재생 (exe-analysis 5-2). LOP = 6-86 에서 "카이리의 편지" 로 잘못 부른 영상 (영상에 박힌 영어 글씨 5장면, "Thinking of you, wherever you are." ~ "one sky, one destiny.") -> 이미 한국어 자막 5줄이 들어가 있음.
   사용자 지적: "카이리의 편지" 는 KH2 영상. 사용자가 준 영상(YouTube "Kingdom Hearts 1 Idle Video [Simple and Clean Orchestra]")이 LOP 와 같은 문구. 이름을 "타이틀 대기 영상" 으로 정정 (README, 릴리스 노트).
 - 실제 대기 재생 화면에서는 아직 확인 안 함 (자막 형식은 6-86 시험 주입으로 확인).
+
+### 6-89. 저장소를 타이틀별 폴더로, 타이틀 선택 설치기 0.4.0 (2026-11-04, `recom` 브랜치)
+- 사용자 결정: Re:COM 도 KoreanHearts 한 프로젝트로. 구조는 `kh1/` + `recom/` (KH1 도 하위 폴더로 이동), 설치기에서 타이틀별 설치·제거 선택, 설치기는 지금 만든다.
+- 작업 위치: `recom` 브랜치, worktree `D:\Projects\recom-korean`. `main`(`D:\Projects\kh1-korean`)은 KH1 긴급 수정용으로 그대로. 아직 커밋 없음.
+- 이동: `tools/`, `translation/`, `docs/` -> `kh1/` (git mv). 도구는 모두 `ROOT = tools/..` 라 `kh1/data`, `kh1/mod`, `kh1/translation` 을 그대로 찾는다 (도구 코드 변경 없음). `.gitignore` 는 `/*/data/` 처럼 타이틀 폴더마다.
+- 설치기 0.4.0 (`installer/app.py`, `update.py`, `koreanhearts.spec`, `build_release.ps1`, `README-release.txt`, `update.json` min_app 0.4.0):
+  - 작업 폴더 `<게임>/KoreanHearts`: `mod/<id>` (Panacea mod_path 하나를 모든 타이틀이 같이 씀), `<id>/` (번역 표·도구 사본, KH1 메모리 패치가 씀), `install.json` = shared(DLL·설정 백업) + titles.
+  - KH1 은 `<작업>/kh1` 에서 빌드·검증한 뒤 `mod/kh1` 만 공용 `mod/kh1` 로 옮긴다.
+  - 제거는 고른 타이틀만. 마지막 타이틀일 때만 panacea_settings.txt·DLL 을 되돌리고 작업 폴더 삭제. 설치 전 설정 백업은 처음 한 번만 기록 (0.3.0 은 재설치 때 자기 설정 파일을 "원본" 으로 다시 백업할 수 있었음).
+  - 0.3.x 의 `<게임>/KH1Korean` 은 처음 볼 때 옮김 (mod/kh1, translation, tools, 설정 백업; 실패하면 되돌림).
+  - 새 번역 판단: 커밋 sha 가 다르고 **그 타이틀의 tools + translation/src 내용 해시**(`update.content_id`)도 다를 때만. 한 타이틀만 고친 커밋이 다른 타이틀 사용자에게 재빌드를 묻지 않게.
+  - 받기(KEEP): `<id>/tools/`, `<id>/translation/src/`, `installer/update.json`. 실행 파일에도 `kh1/tools` 파일을 그대로 묶어 같은 커밋이면 내용 해시가 같다.
+  - 게임 켜짐 확인(tasklist)으로 설치·제거·이전 중 파일 잠김을 막음. CLI: `--install|--uninstall|--play|--status <게임> <로그> [kh1,recom]`.
+  - Re:COM 은 `TITLES` 에 "준비 중" (체크 불가, 설치 요청은 거부).
+- 0.3.0 설치기에 미치는 영향: 새 구조 커밋에는 최상위 `tools/build_ko.py` 가 없어 0.3.0 은 그 커밋을 쓰지 않고 "설치 프로그램 0.4.0 이상 필요" 를 안내한다 (마지막으로 받은 번역으로 계속 동작). 그래서 이 브랜치를 main 에 합칠 때 0.4.0 릴리스를 함께 내야 한다.
+- 시험 (시험용 게임 폴더 `D:\Projects\kh_testgame` = 실제 게임 pkg 하드링크 + 가짜 panacea_settings.txt, 로그 `D:\Projects\kh_testlogs`):
+  1. 0.3.0(main, 개발 실행) 설치 -> `KH1Korean`, 검증 문제 0, mod 2,266 파일 (기준).
+  2. 0.4.0 `--status` -> 이전: mod/kh1 2,266 · translation 86 · tools 28 파일 해시 모두 같음, 옛 폴더 삭제, 설정 mod_path 새 경로, 백업 이동.
+  3. `--install recom` 거부("준비 중"), `--uninstall recom` 은 아무것도 안 바꿈(2,382 파일 해시 같음), `kh3` 은 오류.
+  4. `--uninstall` (마지막 타이틀) -> panacea_settings.txt 원래 바이트로 복원, DBGHELP.dll·KoreanHearts 삭제.
+  5. 0.4.0(개발 실행) 새로 설치 -> 검증 문제 0, mod 2,266 · translation 86 · tools 28 파일이 1번(0.3.0) 결과와 해시 모두 같음. content `a3aa8fffca1a` (저장소에서 계산한 값과 같음).
+  6. 가짜 recom 항목을 넣고 `--uninstall kh1` -> kh1 만 지워지고 recom·DLL·설정 유지. 이어서 `--uninstall recom` -> 설정 원래 바이트, DLL·작업 폴더 삭제.
+  7. `dist/KoreanHearts.exe --install kh1` (pyinstaller, 묶음 안 `kh1/` 33 파일): GitHub main(cf65071, 옛 구조)을 받았으나 "맞지 않아 묶여 있는 번역" 으로 넘어감, 도구는 `_MEI.../kh1/tools`, 검증 문제 0, mod·tools 해시 1번과 같음, content 같음.
+     (처음엔 이 경우 "설치 프로그램 0.3.0 이상 필요" 라는 틀린 안내가 나오는 코드였음 -> min_app 을 만족하는데 구성이 다른 커밋은 일반 안내로 고침)
+  8. 설치된 상태에서 setup_shared 다시 -> 설정 백업(원본) 바이트 그대로, DLL 기록 유지. 화면 캡처: KH1 체크·"설치됨", Re:COM 회색·"준비 중".
+- pyinstaller 경고 `tables._comp_lzo` 등은 도구 `tables.py` 이름이 PyTables hook 에 걸린 것 (0.3.0 과 같음, 무해).
+- 남은 일: 커밋(사용자 요청 시), main 병합 + 0.4.0 릴리스. 실제 게임 화면에서 0.4.0 설치본 실행은 아직 안 함 (결과 파일이 0.3.0 과 바이트 동일, 메모리 패치 경로만 `KoreanHearts/kh1/tools` 로 바뀜).
+
+### 6-90. 설치 프로그램 자기 업데이트 (2026-11-09, `recom` 브랜치, 0.5.0 에 포함)
+
+- 사용자 요청: 런처(설치 프로그램) 자체 업데이트도 사람이 확인하지 않고 GitHub 에서 자동으로 받게.
+- 새 `installer/selfupdate.py`. GUI 시작 때 번역 확인(update.resolve)보다 먼저 `releases/latest`(초안·시험판 제외) 확인.
+  태그 버전 > VERSION 이고 자산 `KoreanHearts-<태그 버전>.zip` 이 있으면: 받기 -> 크기·sha256(자산 `digest`) 확인 -> zip 안 `KoreanHearts.exe` 1개 -> `<exe>.new` 로 쓰기
+  -> `<exe>.new --selftest <파일>` 이 보고한 VERSION 이 태그와 같아야 함 (VERSION 을 안 올린 릴리스로 매번 다시 받는 일 방지)
+  -> 실행 중 exe 를 `<exe>.old` 로 이름 바꾸고 새 파일을 `<exe>` 로 -> `<exe> --updated-from <옛 판>` 으로 다시 띄우고 창 닫기. 새 판이 `.old` 를 지움(최대 30초 재시도).
+  자식 실행은 `PYINSTALLER_RESET_ENVIRONMENT=1` (옛 판의 _MEI 임시 폴더·환경을 물려받지 않게). 실패하면 기록만 남기고 지금 판으로 계속.
+- 하지 않는 경우: 화면 없는 실행(--install 등), 개발 실행(비 frozen), `KH1KO_NO_SELFUPDATE`. 시험용 `KH1KO_RELEASE_API`(릴리스 JSON 주소), `KH1KO_GUI_LOG`(창 로그를 파일에도).
+- 릴리스 규칙: 태그 `v<VERSION>`, 자산 이름은 build_release.ps1 결과 그대로. 옛 자산 `KH1Korean-*.zip` 은 보지 않으므로 0.3.0 이하 사용자는 0.5.0 을 한 번은 직접 받아야 한다 (0.3.0 에는 이 기능이 없음).
+- 시험 (PyInstaller 6.22.3 로 A=0.5.0, B=VERSION 만 0.5.1 로 바꾼 exe, 로컬 http.server 를 가짜 릴리스로, KH1KO_NO_UPDATE=1):
+  1. digest 틀림 -> "sha256 이 릴리스 정보와 다름", exe 해시 그대로, .new 없음, 번역 단계로 계속.
+  2. 태그 v0.5.2 + 0.5.1 exe -> "시험 실행 결과가 다름 ('0.5.1', 릴리스 0.5.2)", 그대로.
+  3. 자산 이름이 규칙과 다름 -> "받을 파일이 아직 없습니다" 안내, 그대로.  4. 서버 접속 불가 -> "새 판 확인 실패", 그대로.
+  5. 정상 -> exe 해시 = B, `.old` 지워짐, 0.5.0 프로세스 끝나고 `--updated-from 0.5.0` 으로 뜬 0.5.1 이 "0.5.0 에서 0.5.1 로 업데이트" 표시,
+     같은 릴리스를 다시 받지 않고 번역 단계로 (서버 기록: 릴리스 JSON 2번, zip 1번). 정상 종료한 프로세스·selftest 는 _MEI 임시 폴더를 남기지 않음.
+  6. 실제 GitHub: `fetch_exe` 로 v0.3.0 자산(KH1Korean-0.3.0.zip, 리디렉션) 받기 -> 크기·sha256 통과, "zip 안에 KoreanHearts.exe 가 0개" 에서 멈춤 (기대대로).
+- 확인 못 한 것: 실제 0.5.x 릴리스로의 전 과정, 사용자 세션의 실제 창 화면 (이 셸은 세션 0), 백신의 반응.

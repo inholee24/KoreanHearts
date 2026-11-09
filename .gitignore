@@ -1,9 +1,9 @@
-# 게임 원본과 원본에서 만든 결과물 (저장소·배포에 넣지 않는다)
-/data/
-/mod/
-/translation/*.tsv
-/translation/build/
-/translation/work/
+# 게임 원본과 원본에서 만든 결과물 (저장소·배포에 넣지 않는다). 타이틀 폴더(kh1/, recom/ ...)마다 같은 규칙
+/*/data/
+/*/mod/
+/*/translation/*.tsv
+/*/translation/build/
+/*/translation/work/
 *.orphans.tsv
 
 # 빌드
@@ -18,4 +18,4 @@ __pycache__/
 /third_party/*.dll
 
 # 게임 화면 캡처 (작업 기록용, 로컬에만)
-/docs/images/
+/*/docs/images/
