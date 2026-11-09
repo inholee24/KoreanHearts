@@ -265,3 +265,12 @@ KH1 보다 단순한 경로가 열렸다: 텍스처 확장·메모리 패치가 
 을 더해 ㄹ 가로획 사이 틈이 메워짐 ("돌아가기" 의 돌도 같음). 선택 줄의 흰 고리(ring 4)는 그 글자 모양에서 만들어지므로 함께 뭉침.
 수정 (`src/imgtext.json`, title_menu_sora / title_menu_riku 작업 0~3): `bold: 0`, `sz: 38` 로 네 줄 통일 (scale 제거). 고리 두께 4 는 원본 측정값이라 유지.
 게임 확인: 선택 줄(검은 글자 + 흰 고리)·선택 안 된 줄 모두 "로드"·"돌아가기" 의 ㄹ 이 세 가닥으로 보임. 바뀐 파일 = 타이틀 imz 2 + PNG 6, verify 문제 0, 개발 Panacea mod 동기화.
+
+## 2026-11-10 — 0.5.0 릴리스 (GitHub)
+
+- 커밋: `9139795` (Re:COM 추가 + 저장소 kh1/ recom/ 구조), `8c880c9` (main 의 KH1 수정 4e2ef1e 를 새 구조로 병합. KH1 tools·translation/src 트리 해시가 main 과 같음).
+- 배포 파일 `KoreanHearts-0.5.0.zip` (21,383,005 바이트, sha256 02c7ade0…164e, 묶인 번역 8c880c9). 실제 exe 로 가짜 게임 폴더에 Re:COM 설치 -> 675 파일 = 저장소 mod, 제거 -> 원상태.
+- 순서: 태그 v0.5.0 push -> 릴리스(정식, latest) + 자산 업로드(크기·sha256 일치 확인) -> main fast-forward push (4e2ef1e..8c880c9).
+- push 뒤 확인: update.fetch_sha = 8c880c9, usable(0.5.0) True / usable(0.3.0) False (0.3.0 은 "새 판 필요" 안내), 내용 해시 kh1 같음.
+  recom 은 imgtext.json 줄바꿈 차이(작업 폴더 CRLF, 저장소 LF)로 묶인 것과 달랐음 -> 작업 폴더를 LF 로 맞춤 (내용은 같음, 오프라인 설치자에게만 "새 번역 있음" 이 한 번 뜰 수 있음).
+- 빌드 환경: `.venv-build` 는 kh1-korean 의 것을 junction 으로 씀. GitHub CLI 없음 -> 릴리스는 REST API (git credential 토큰).
