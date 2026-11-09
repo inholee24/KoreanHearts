@@ -91,3 +91,10 @@
 0x28f820	ui_str_next	(rcx 문자열, edx 0=처음/1=다음) 시스템 글꼴 문자열 끝(00/10)까지 제어 길이 규칙으로 넘김. 42차
 0x176df3	msg_ctl_0e_insert	대화창 0x0E xx: 아이템 이름(0x28f9b0)·어빌리티 이름(0x28f8f0) 등 문자열 삽입. 42차
 0x2d22f98	word_ptr_tbl	(data) Word 문자열 핸들 u32 x 512. 42차
+0x1b93f0	op000_win_open	op0(tpl): 템플릿을 빈 슬롯에 복사해 창을 연다 (tpl_apply_b 로 이어짐). 57차
+0x1b9770	op003_tpl_pos	op3(tpl, x, y): 템플릿 +0x30/+0x34 위치만. 57차
+0x170c20	game_state_request	(ecx) 다음 게임 상태 요청 -> 0x22ec0b0, 페이드 뒤 0x233fbc0 로. 13 = 타이틀 대기 영상(LOP). 6-88
+0x170870	game_state_tick	게임 상태 0x233fbc0 분기 (표 0x170b64). 13 -> 0x18c480(3) 영상 재생. 6-88
+0x18c480	movie_play	(ecx 영상 번호 0 OPN 1 END 2 ENX 3 LOP 4 EXM) 0x2340f94 에 두고 0x18e8f0 로 연다. 6-88
+0x4e5eb0	win_width_bonus_tbl	(data) 0x30B x 11: 메시지 은행 이름 포인터, 플래그, 언어별 추가 칸 float[7]. 은행 적재 때 0x22ec1c4 에 두고 win_open 이 폭에 더함. 57차
+0x22ec1c4	win_width_bonus	(data) float 창 폭 추가 칸 (현재 은행). win_open(0x173470) 이 r8b=1 이면 +0x40 에 더함. 57차

@@ -100,7 +100,7 @@ PC Steam 판 *KINGDOM HEARTS -HD 1.5+2.5 ReMIX-* 의 타이틀을 한국어로 �
   - 빌드한 메시지 파일 2,000여 개를 원본과 하나씩 대조합니다.
   - 바뀐 메시지가 모두 번역이 있는 원문이고, 글자 표로 해독했을 때 번역문과 정확히 같은지 확인합니다.
   - 확인 대상은 메시지 약 75만 개입니다.
-- [tools/fixwin_check.py](kh1/tools/fixwin_check.py): 이벤트 스크립트에서 고정 크기 창 894개를 찾습니다. 번역문이 창 용량을 넘는지 검사합니다.
+- [tools/bubble_check.py](kh1/tools/bubble_check.py): 이벤트 스크립트를 실행 파일 규칙대로 따라가 각 대사가 어떤 크기의 말풍선에 뜨는지 찾고, 실제 빌드 결과를 게임과 같은 방식으로 재서 넘치는 대사를 찾습니다.
 - [tools/sysfont_sim.py](kh1/tools/sysfont_sim.py): 실행 파일의 규칙대로 UI 글꼴을 그려 봅니다. 게임을 켜지 않고 결과를 미리 확인할 수 있습니다.
 
 ## 3. 배포 설계: 원본 데이터 없는 패치
@@ -203,7 +203,7 @@ Python 3.13 + Pillow가 필요하고, 맑은 고딕(`C:\Windows\Fonts\malgun*.tt
    python kh1/tools/settingmenu.py --apply              설정 메뉴
    python kh1/tools/evdl_patch.py --apply               상점 선택지 창 폭
 5. python kh1/tools/verify_build.py                     '문제 0' 이어야 함
-   python kh1/tools/fixwin_check.py                     고정 크기 말풍선 넘침 'n 0'
+   python kh1/tools/bubble_check.py                     말풍선 넘침 '넘침 0'
 6. python kh1/tools/tables.py strip                     커밋 전에 kh1/translation/src 갱신
    python kh1/tools/tables.py check                     strip -> expand 가 전체 표와 같은지
 ```
