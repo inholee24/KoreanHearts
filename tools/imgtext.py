@@ -193,7 +193,8 @@ JOBS = {
                                           _wt("네버랜드", 255, 462, 34, align="c", w=240, color=(222, 118, 18, 255))]),
         _world("nm/nm_000.dpx", "158a0", [(17, 460, 109, 503), _wt("할로윈 타운", 152, 464, 34, w=325)]),
         _world("lm/lm_002.dpx", "12a40", [(19, 95, 111, 142), _wt("아틀란티카", 134, 99, 34, w=273)]),
-        _world("di/di_002.dpx", "22c00", [_wt(c, 480, 36 + k * 49, 32, align="c") for k, c in enumerate("데스티니 아일랜드") if c != " "]),
+        # 부제 칸이 세로이고 게임이 반시계로 90도 돌려 가로로 보인다 (일본판 가나도 시계 방향으로 누워 있음, 57차) -> 글자도 시계 방향으로 돌려 쓴다
+        _world("di/di_002.dpx", "22c00", [_wt(c, 480, 36 + k * 49, 32, align="c", rot=90) for k, c in enumerate("데스티니 아일랜드") if c != " "]),
         _world("pi/pi_000.dpx", "e410", [(194, 88, 260, 111), (444, 88, 510, 111),
                                          _wt("몬스트로", 352, 90, 17, align="c", w=154, color=(129, 87, 198, 255))]),
         _world_jp("aw/aw_001.dpx", "21280", [("erase", (125, 70, 256, 122)), ("erase", (0, 8, 165, 58)),
@@ -354,6 +355,8 @@ def render_text(text, o):
     im = im.crop(bb) if bb else im
     if "w" in o and im.width > o["w"]:
         im = im.resize((o["w"], im.height), Image.LANCZOS)
+    if o.get("rot"):                                   # 시계 방향 회전 (게임이 칸을 돌려 그리는 그림)
+        im = im.rotate(-o["rot"], resample=Image.BICUBIC, expand=True)
     return im
 
 
