@@ -1620,3 +1620,14 @@ python -I -X utf8 tools/tr_batch.py stats      # 월드별 진행, 새 글자 �
 - 원인 2 (확정): 데스티니 아일랜드 부제 칸(di_002 22c00)은 세로이고 게임이 반시계 90도로 돌려 가로로 보인다. 일본판 가나는 시계 방향으로 누워 있는데 한글은 바로 세워 넣었다.
   imgtext.py render_text 에 rot(시계 방향) 옵션, di 부제만 rot=90. 그림을 반시계로 돌려 보면 바로 선 글자로 읽힘 (scratchpad 미리보기).
 - 백업 D:/Projects/openkh_backups/2026-11-09_bubble57_before/. build_ko --apply --layout jp, imgtext --apply world, verify 문제 0, 글자 1070 그대로, tables check 같음. 인게임 미확인.
+
+### 6-92. 58차: 번역이 빠진 실제 문구 (2026-11-20)
+- 사용자 화면: 무기를 고르는 장면(데스티니 아일랜드 꿈, dh01)의 선택지가 "Yes / No" 영어로 나옴.
+- 원인 (확정): dh01 #6 (key 6ae0fd0e82a6) 의 ko 칸이 비어 있었다 (6-79 점검에서 빠짐). 같은 장면 #16 "Yes / Maybe not" 은 번역돼 있었다.
+- 전수 조사: 번역 표 4개에서 ko 가 비고 원문에 영어 단어가 있는 줄 143개. 실제로 화면에 나올 수 있는 20개를 채움:
+  dh01 #6 (그래./아니.), 콜로세움 시드 선택지 he02 #270~277 6개 (기존 "50번 시드 / 참가하지 않는다" 형식), pc13 #400 안셈 "나는―",
+  nm02 #0 PAUSE (일시 정지), 구미 설계도 기본 이름 SASAMSG #206~215 (새 설계도 - 1~10), SASAMSG #266 설계도 삭제 안내 뒷부분 조각.
+- 남긴 123개: 개발용 (Map Jump Test, Debug, Dummy, Gimmick, pi32 디버그 메뉴, World Map Event Test, winner 등), 일본판 잔재로 깨진 기호 줄 (aw04/tz01/tz06 3f4·3fc, pp01 Push),
+  약어 (Lv./HP/MP/EXP/AP, STR/DEF, SYS. UP, COM. LV, KHFM). ko 안에 남은 영어는 버튼·약어·회사명·서고 책 이름 등 의도된 것뿐.
+- 사고: 처음 적용 때 셸 heredoc 이 \n 을 실제 줄바꿈으로 바꿔 표 줄이 깨짐 -> verify 에서 파일 21개 파싱 실패로 발견, 백업으로 되돌리고 스크립트 파일로 다시 적용.
+- 백업 D:/Projects/openkh_backups/2026-11-20_untrans_before/. build_ko --apply --layout jp, verify 문제 0 (바뀐 메시지 738,840), bubble_check 넘침 0, 글자 1070 그대로, tables check 같음. 인게임 미확인.
